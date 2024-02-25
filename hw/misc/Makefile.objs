@@ -7,6 +7,7 @@ common-obj-$(CONFIG_ISA_TESTDEV) += pc-testdev.o
 common-obj-$(CONFIG_PCI_TESTDEV) += pci-testdev.o
 
 obj-$(CONFIG_VMPORT) += vmport.o
+obj-$(CONFIG_VMPORT) += vmport_rpc.o
 
 # ARM devices
 common-obj-$(CONFIG_PL310) += arm_l2x0.o

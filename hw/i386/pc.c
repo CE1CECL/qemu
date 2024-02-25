@@ -1042,7 +1042,9 @@ void pc_hot_add_cpu(const int64_t id, Error **errp)
     object_unref(OBJECT(cpu));
 }
 
-void pc_cpus_init(const char *cpu_model, DeviceState *icc_bridge)
+/* vmware_port_ring3 true says enable VMware port access in ring3. */
+void pc_cpus_init(const char *cpu_model, DeviceState *icc_bridge,
+                  bool vmware_port_ring3)
 {
     int i;
     X86CPU *cpu = NULL;
@@ -1073,6 +1075,7 @@ void pc_cpus_init(const char *cpu_model, DeviceState *icc_bridge)
             error_report_err(error);
             exit(1);
         }
+        cpu->allow_vmport_ring3 = vmware_port_ring3;
         object_unref(OBJECT(cpu));
     }
 
@@ -1835,6 +1838,21 @@ static bool pc_machine_get_aligned_dimm(Object *obj, Error **errp)
     return pcms->enforce_aligned_dimm;
 }
 
+static bool pc_machine_get_vmware_port_ring3(Object *obj, Error **errp)
+{
+    PCMachineState *pcms = PC_MACHINE(obj);
+
+    return pcms->vmware_port_ring3;
+}
+
+static void pc_machine_set_vmware_port_ring3(Object *obj, bool value,
+                                             Error **errp)
+{
+    PCMachineState *pcms = PC_MACHINE(obj);
+
+    pcms->vmware_port_ring3 = value;
+}
+
 static void pc_machine_initfn(Object *obj)
 {
     PCMachineState *pcms = PC_MACHINE(obj);
@@ -1865,6 +1883,12 @@ static void pc_machine_initfn(Object *obj)
     object_property_add_bool(obj, PC_MACHINE_ENFORCE_ALIGNED_DIMM,
                              pc_machine_get_aligned_dimm,
                              NULL, NULL);
+
+    pcms->vmware_port_ring3 = false;
+    object_property_add_bool(obj, PC_MACHINE_VMWARE_PORT_RING3,
+                             pc_machine_get_vmware_port_ring3,
+                             pc_machine_set_vmware_port_ring3,
+                             NULL);
 }
 
 static unsigned pc_cpu_index_to_socket_id(unsigned cpu_index)

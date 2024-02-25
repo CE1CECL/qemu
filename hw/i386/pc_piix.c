@@ -146,7 +146,7 @@ static void pc_init1(MachineState *machine)
     object_property_add_child(qdev_get_machine(), "icc-bridge",
                               OBJECT(icc_bridge), NULL);
 
-    pc_cpus_init(machine->cpu_model, icc_bridge);
+    pc_cpus_init(machine->cpu_model, icc_bridge, pc_machine->vmware_port_ring3);
 
     if (kvm_enabled() && kvmclock_enabled) {
         kvmclock_create();

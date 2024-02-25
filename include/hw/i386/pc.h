@@ -40,6 +40,7 @@ struct PCMachineState {
 
     uint64_t max_ram_below_4g;
     OnOffAuto vmport;
+    bool vmware_port_ring3;
     bool enforce_aligned_dimm;
 };
 
@@ -48,6 +49,7 @@ struct PCMachineState {
 #define PC_MACHINE_MAX_RAM_BELOW_4G "max-ram-below-4g"
 #define PC_MACHINE_VMPORT           "vmport"
 #define PC_MACHINE_ENFORCE_ALIGNED_DIMM "enforce-aligned-dimm"
+#define PC_MACHINE_VMWARE_PORT_RING3 "vmware-port-ring3"
 
 /**
  * PCMachineClass:
@@ -142,7 +144,7 @@ static inline void vmport_init(ISABus *bus)
     isa_create_simple(bus, "vmport");
 }
 
-void vmport_register(unsigned char command, VMPortReadFunc *func, void *opaque);
+bool vmport_register(unsigned char command, VMPortReadFunc *func, void *opaque);
 void vmmouse_get_data(uint32_t *data);
 void vmmouse_set_data(const uint32_t *data);
 
@@ -161,7 +163,9 @@ extern int fd_bootchk;
 void pc_register_ferr_irq(qemu_irq irq);
 void pc_acpi_smi_interrupt(void *opaque, int irq, int level);
 
-void pc_cpus_init(const char *cpu_model, DeviceState *icc_bridge);
+/* vmware_port_ring3 true says enable VMware port access in ring3. */
+void pc_cpus_init(const char *cpu_model, DeviceState *icc_bridge,
+                  bool vmware_port_ring3);
 void pc_hot_add_cpu(const int64_t id, Error **errp);
 void pc_acpi_init(const char *default_dsdt);
 

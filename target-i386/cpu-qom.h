@@ -109,6 +109,9 @@ typedef struct X86CPU {
      */
     bool enable_pmu;
 
+    /* allow_vmport_ring3 true says enable VMware port access in ring3 */
+    bool allow_vmport_ring3;
+
     /* in order to simplify APIC support, we leave this pointer to the
        user */
     struct DeviceState *apic_state;

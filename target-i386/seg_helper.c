@@ -2566,6 +2566,15 @@ static inline void check_io(CPUX86State *env, int addr, int size)
 {
     int io_offset, val, mask;
 
+    /* vmport hack: skip iopl checking for VMware port 0x5658 (see
+     * vmport_realizefn()) */
+    if (addr == 0x5658) {
+        X86CPU *cpu = x86_env_get_cpu(env);
+        if (cpu->allow_vmport_ring3) {
+            return;
+        }
+    }
+
     /* TSS must be a valid 32 bit one */
     if (!(env->tr.flags & DESC_P_MASK) ||
         ((env->tr.flags >> DESC_TYPE_SHIFT) & 0xf) != 9 ||

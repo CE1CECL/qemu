@@ -27,7 +27,7 @@
 #include "sysemu/kvm.h"
 #include "hw/qdev.h"
 
-//#define VMPORT_DEBUG
+#include "trace.h"
 
 #define VMPORT_CMD_GETVERSION 0x0a
 #define VMPORT_CMD_GETRAMSIZE 0x14
@@ -49,13 +49,15 @@ typedef struct VMPortState
 
 static VMPortState *port_state;
 
-void vmport_register(unsigned char command, VMPortReadFunc *func, void *opaque)
+bool vmport_register(unsigned char command, VMPortReadFunc *func, void *opaque)
 {
-    if (command >= VMPORT_ENTRIES)
-        return;
+    if (command >= VMPORT_ENTRIES || !port_state) {
+        return false;
+    }
 
     port_state->func[command] = func;
     port_state->opaque[command] = opaque;
+    return true;
 }
 
 static uint64_t vmport_ioport_read(void *opaque, hwaddr addr,
@@ -79,9 +81,7 @@ static uint64_t vmport_ioport_read(void *opaque, hwaddr addr,
         return eax;
     if (!s->func[command])
     {
-#ifdef VMPORT_DEBUG
-        fprintf(stderr, "vmport: unknown command %x\n", command);
-#endif
+        trace_vmport_ioport_unknown_command(command);
         return eax;
     }
 
@@ -109,7 +109,7 @@ static uint32_t vmport_cmd_ram_size(void *opaque, uint32_t addr)
     X86CPU *cpu = X86_CPU(current_cpu);
 
     cpu->env.regs[R_EBX] = 0x1177;
-    return ram_size;
+    return ram_size >> 20; /* in MB */
 }
 
 /* vmmouse helpers */
